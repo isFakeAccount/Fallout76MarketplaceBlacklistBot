@@ -7,6 +7,7 @@ def reply(comment_or_submission, body):
     try:
         new_comment = comment_or_submission.reply(response)
         new_comment.mod.distinguish(how="yes")
+        new_comment.mod.lock()
     except prawcore.exceptions.Forbidden:
         pass
 
