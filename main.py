@@ -4,10 +4,9 @@ import traceback
 import praw
 
 import CONFIG
-
-# Only works in the subreddit mentioned in CONFIG and when bot is mentioned explicitly
 import trello_blacklist
 
+# Only works in the subreddit mentioned in CONFIG and when bot is mentioned explicitly
 subreddit = CONFIG.reddit.subreddit(CONFIG.subreddit_name)
 
 # Gets 100 historical comments

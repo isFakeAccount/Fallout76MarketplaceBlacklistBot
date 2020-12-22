@@ -1,9 +1,9 @@
 import re
 
+import trello
+
 import CONFIG
 import bot_responses
-
-import trello
 
 
 # To extract the text from curly brackets

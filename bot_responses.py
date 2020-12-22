@@ -1,7 +1,5 @@
 import prawcore
 
-import CONFIG
-
 
 # Replies to comment with text=body
 def reply(comment_or_submission, body):
