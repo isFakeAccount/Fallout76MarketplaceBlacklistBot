@@ -24,7 +24,7 @@ while True:
     try:
         # Gets comments and if it receives None, it switches to posts
         for comment in comment_stream:
-            if comment is None:
+            if comment is None or comment.author.name == "AutoModerator":
                 break
             trello_blacklist.check_comment_in_blacklist(comment)
 
