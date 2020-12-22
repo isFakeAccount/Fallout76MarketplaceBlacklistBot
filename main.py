@@ -53,7 +53,7 @@ while True:
             print("Error sending message to is_fake_Account")
 
         # Try again after a pause
-        time.sleep(1 * failed_attempt)
+        time.sleep(2 * failed_attempt)
         failed_attempt = failed_attempt + 1
 
         # Refresh streams
