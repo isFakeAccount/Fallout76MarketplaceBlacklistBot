@@ -14,33 +14,77 @@ def reply(comment_or_submission, body):
 
 # Adds disclaimer text in the comment
 def add_disclaimer(response_text, comment_or_submission):
-    response_text += "\n\n[See disclaimer]"
+    response_text += "[See disclaimer]"
     response_text += "(https://www.reddit.com/user/Vault-TecTradingCo/comments/j497xo" \
                      "/disclaimer_for_uvaulttectradingco_bot/) "
     return response_text
 
 
-def comment_blacklist_search_result(keyword, blacklist, comment_or_submission):
-    response_text = "Error! Please message mods!"
-    if len(blacklist) > 0:
-        response_text = "The user *" + keyword + "* has been found on blacklist " + str(len(blacklist)) + " "
-        response_text = response_text + "time(s). The links for each time when the user appeared in blacklist are:\n\n "
-        for item in blacklist:
-            # Url of card/s
-            response_text = response_text + "[" + item.labels[
-                0].name + ": " + item.name + "](" + item.short_url + ")\n\n"
-            # Checks the description for offense and add them to comment
-            desc_list = item.desc.split("\n\n")
-            match = [element for element in desc_list if "offense" in element.lower()]
-            for element in match:
-                response_text += element + "\n\n"
-        response_text = response_text + "^(Please check each link to verify.)"
-    else:
-        response_text = "The bot has performed a search and has determined that the user *\"" + keyword + "\"* is not "
-        response_text = response_text + "in present in our blacklist.\n\n^(Please take precautions if the user account "
-        response_text = response_text + "is very new, has low trade karma or actively delete submissions/comments. "
-        response_text = response_text + "You may also check their gamertag using the bot commands (see Automod pinned "
-        response_text = response_text + "comment. If you are doing a high value trade, consider using an official "
-        response_text = response_text + "courier. You can find links to all couriers in the subreddit wiki or sidebar.)"
+# Get all labels from the trello card
+def get_all_labels(trello_card):
+    # If there are no labels for card
+    if trello_card.labels is None:
+        return "BLACKLISTED"
+    # Otherwise return all label names in string
+    labels = ""
+    for label in trello_card.labels:
+        labels = label.name + ", "
+    return labels[:-2]
+
+
+# Comments the blacklist search result for automatic check that bot performs on the users
+# whenever they submit a post or comment
+def comment_blacklist_search_result_auto_check(username, blacklist, comment_or_submission):
+    response_text = "The user *" + username + "* has been found on blacklist " + str(len(blacklist)) + " "
+    response_text = response_text + "time(s). The links for each time when the user appeared in blacklist are:\n\n "
+    for item in blacklist:
+        # Url of card/s
+        response_text = response_text + "[" + get_all_labels(item) + ": " + item.name + "](" + item.short_url + ")\n\n"
+    response_text = response_text + "^(Please check each link to verify.)"
+    response_text = add_disclaimer(response_text, comment_or_submission)
+    reply(comment_or_submission, response_text)
+
+
+# Comments the blacklist search result for search queries that are requested by the users
+def comment_blacklist_search_result_for_query(query_list, blacklist, comment_or_submission):
+    response_text = ""
+    usernames_for_positive_result = ""  # stores the usernames which gave positive search result in string
+    positive_result_usernames_list = []  # stores the usernames which gave positive search result in list
+    positive_results = []  # # stores the results of positive result usernames
+    negative_results_usernames_list = []  # stores the usernames which gave negative search result in string
+    usernames_for_negative_result = ""  # stores the usernames which gave negative search result in list
+    # Iterate over each user name in query list
+    for i in range(len(query_list)):
+        # If that username gave positive search result
+        if len(blacklist[i]) > 0:
+            usernames_for_positive_result += query_list[i] + ", "
+            positive_result_usernames_list.append(query_list[i])
+            positive_results.append(blacklist[i])
+        # If that username gave negative search result
+        else:
+            usernames_for_negative_result += query_list[i] + ", "
+            negative_results_usernames_list.append(blacklist[i])
+    # If there are users that had positive search result
+    if len(positive_result_usernames_list) > 0:
+        response_text += "The user(s) *\"" + usernames_for_positive_result[:-2] + "\"* has/have been found on blacklist"
+        response_text += ". The links for each time when the user appeared in blacklist are:\n\n"
+        # Iterate over each user
+        for i in range(len(positive_result_usernames_list)):
+            # Iterate over that user's trello search result as result could have multiple cards
+            for positive_result in positive_results[i]:
+                response_text = response_text + "[" + get_all_labels(positive_result) + ": " + positive_result.name + \
+                                " **(" + positive_result_usernames_list[
+                                    i] + ")**](" + positive_result.short_url + ")\n\n"
+        response_text = response_text + "^(Please check each link to verify.)\n\n"
+    # If there are users that had negative search result
+    if len(negative_results_usernames_list) > 0:
+        response_text += "The bot has performed a search and has determined that the user(s) *\""
+        response_text += usernames_for_negative_result[:-2]
+        response_text += "\"* is/are not in present in our blacklist.\n\n^(Please take precautions if the user account"
+        response_text += " is very new, has low trade karma or actively delete submissions/comments. "
+        response_text += "You may also check their gamertag using the bot commands (see Automod pinned "
+        response_text += "comment. If you are doing a high value trade, consider using an official "
+        response_text += "courier. You can find links to all couriers in the subreddit wiki or sidebar.)\n\n"
+    # Add disclaimer text
     response_text = add_disclaimer(response_text, comment_or_submission)
     reply(comment_or_submission, response_text)
