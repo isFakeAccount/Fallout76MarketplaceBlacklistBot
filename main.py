@@ -19,6 +19,8 @@ inbox_stream = praw.models.util.stream_generator(CONFIG.reddit.inbox.mentions, p
 # The numbers of failed attempt to connect to reddit
 failed_attempt = 0
 
+print('Bot has started running...')
+
 # Make sure bot run forever
 while True:
     try:
