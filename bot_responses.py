@@ -36,11 +36,15 @@ def get_all_labels(trello_card):
 # whenever they submit a post or comment
 def comment_blacklist_search_result_auto_check(username, blacklist, comment_or_submission):
     response_text = "The user *" + username + "* has been found on blacklist " + str(len(blacklist)) + " "
-    response_text = response_text + "time(s). The links for each time when the user appeared in blacklist are:\n\n "
+    response_text = response_text + "time(s). The links for each time when the user appeared in blacklist are:\n\n"
     for item in blacklist:
-        # Url of card/s
-        response_text = response_text + "[" + get_all_labels(item) + ": " + item.name + "](" + item.short_url + ")\n\n"
-    response_text = response_text + "^(Please check each link to verify.)"
+        try:
+            # Url of card/s
+            response_text = response_text + "[" + get_all_labels(
+                item) + ": " + item.name + "](" + item.short_url + ")\n\n"
+        except Exception:
+            response_text += "Error: " + username + "\n\n"
+    response_text = response_text + "^(Please check each link to verify.)\n\n"
     response_text = add_disclaimer(response_text, comment_or_submission)
     reply(comment_or_submission, response_text)
 
