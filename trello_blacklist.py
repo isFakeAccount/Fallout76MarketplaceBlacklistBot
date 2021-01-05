@@ -22,7 +22,7 @@ def check_comment_in_blacklist(comment):
     # If the comment has query, only then it searches and replies to the user
     if len(output) > 0:
         for query in output:
-            blacklist_result.append(search_in_blacklist(query))
+            blacklist_result.append(search_in_blacklist(query.strip()))
         bot_responses.comment_blacklist_search_result_for_query(output, blacklist_result, comment)
 
     # checks for the author of the comment

@@ -3,21 +3,16 @@ import prawcore
 
 # Replies to comment with text=body
 def reply(comment_or_submission, body):
-    response = body + "\n\n ^(This action was performed by a bot, please contact the mods for any questions.)"
+    # Add disclaimer text
+    response = body + "\n\n ^(This action was performed by a bot, please contact the mods for any questions. "
+    response += "[See disclaimer](https://www.reddit.com/user/Vault-TecTradingCo/comments/j497xo" \
+                "/disclaimer_for_uvaulttectradingco_bot/))"
     try:
         new_comment = comment_or_submission.reply(response)
         new_comment.mod.distinguish(how="yes")
         new_comment.mod.lock()
     except prawcore.exceptions.Forbidden:
         pass
-
-
-# Adds disclaimer text in the comment
-def add_disclaimer(response_text, comment_or_submission):
-    response_text += "[See disclaimer]"
-    response_text += "(https://www.reddit.com/user/Vault-TecTradingCo/comments/j497xo" \
-                     "/disclaimer_for_uvaulttectradingco_bot/) "
-    return response_text
 
 
 # Get all labels from the trello card
@@ -28,7 +23,7 @@ def get_all_labels(trello_card):
     # Otherwise return all label names in string
     labels = ""
     for label in trello_card.labels:
-        labels = label.name + ", "
+        labels += label.name + ", "
     return labels[:-2]
 
 
@@ -44,8 +39,8 @@ def comment_blacklist_search_result_auto_check(username, blacklist, comment_or_s
                 item) + ": " + item.name + "](" + item.short_url + ")\n\n"
         except Exception:
             response_text += "Error: " + username + "\n\n"
+            print("Error: " + username)
     response_text = response_text + "^(Please check each link to verify.)\n\n"
-    response_text = add_disclaimer(response_text, comment_or_submission)
     reply(comment_or_submission, response_text)
 
 
@@ -85,10 +80,8 @@ def comment_blacklist_search_result_for_query(query_list, blacklist, comment_or_
         response_text += "The bot has performed a search and has determined that the user(s) *\""
         response_text += usernames_for_negative_result[:-2]
         response_text += "\"* is/are not in present in our blacklist.\n\n^(Please take precautions if the user account"
-        response_text += " is very new, has low trade karma or actively delete submissions/comments. "
-        response_text += "You may also check their gamertag using the bot commands (see Automod pinned "
-        response_text += "comment. If you are doing a high value trade, consider using an official "
-        response_text += "courier. You can find links to all couriers in the subreddit wiki or sidebar.)\n\n"
-    # Add disclaimer text
-    response_text = add_disclaimer(response_text, comment_or_submission)
+        response_text += " is very new, has low trade karma or actively delete submissions/comments. You may also check"
+        response_text += " their gamertag using the bot commands. If you are doing a high value trade, consider using "
+        response_text += "an [official courier](https://www.reddit.com/r/Fallout76Marketplace/wiki/index" \
+                         "/trusted_couriers).) "
     reply(comment_or_submission, response_text)
