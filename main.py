@@ -17,7 +17,7 @@ submission_stream = subreddit.stream.submissions(pause_after=-1, skip_existing=T
 inbox_stream = praw.models.util.stream_generator(CONFIG.reddit.inbox.mentions, pause_after=-1, skip_existing=True)
 
 # The numbers of failed attempt to connect to reddit
-failed_attempt = 0
+failed_attempt = 1
 
 print('Bot has started running...')
 
@@ -43,7 +43,7 @@ while True:
             trello_blacklist.check_comment_in_blacklist(mentions)
 
         # Resetting failed attempt counter in case the code doesn't throw exception
-        failed_attempt = 0
+        failed_attempt = 1
     except Exception:
         # Sends a message to mods in case of error
         tb = traceback.format_exc()
