@@ -17,8 +17,6 @@ comment_stream = subreddit.stream.comments(pause_after=-1, skip_existing=True)
 submission_stream = subreddit.stream.submissions(pause_after=-1, skip_existing=True)
 # inbox stream
 mentions_stream = praw.models.util.stream_generator(CONFIG.reddit.inbox.mentions, pause_after=-1, skip_existing=True)
-# modmail stream
-modmail_stream = subreddit.mod.stream.modmail_conversations(pause_after=-1, skip_existing=True)
 
 # The numbers of failed attempt to connect to reddit
 failed_attempt = 1
