@@ -1,7 +1,9 @@
+import json
 import time
 import traceback
 
 import praw
+import requests
 
 import CONFIG
 import trello_blacklist
@@ -14,12 +16,22 @@ comment_stream = subreddit.stream.comments(pause_after=-1, skip_existing=True)
 # Gets 100 historical submission
 submission_stream = subreddit.stream.submissions(pause_after=-1, skip_existing=True)
 # inbox stream
-inbox_stream = praw.models.util.stream_generator(CONFIG.reddit.inbox.mentions, pause_after=-1, skip_existing=True)
+mentions_stream = praw.models.util.stream_generator(CONFIG.reddit.inbox.mentions, pause_after=-1, skip_existing=True)
+# modmail stream
+modmail_stream = subreddit.mod.stream.modmail_conversations(pause_after=-1, skip_existing=True)
 
 # The numbers of failed attempt to connect to reddit
 failed_attempt = 1
 
 print('Bot has started running...')
+
+
+# Send message to discord channel
+def send_message_to_discord(message_param):
+    data = {"content": message_param, "username": CONFIG.username}
+    output = requests.post(CONFIG.discord_webhooks, data=json.dumps(data), headers={"Content-Type": "application/json"})
+    output.raise_for_status()
+
 
 # Make sure bot run forever
 while True:
@@ -36,8 +48,8 @@ while True:
                 break
             trello_blacklist.check_submission_in_blacklist(submission)
 
-        # Gets mentions and if it receives None, it switches to comments
-        for mentions in inbox_stream:
+        # Gets mentions and if it receives None, it switches to messages
+        for mentions in mentions_stream:
             if mentions is None:
                 break
             trello_blacklist.check_comment_in_blacklist(mentions)
@@ -48,14 +60,13 @@ while True:
         # Sends a message to mods in case of error
         tb = traceback.format_exc()
         try:
-            CONFIG.reddit.redditor("is_fake_Account").message(CONFIG.subreddit_name, tb,
-                                                              from_subreddit=CONFIG.subreddit_name)
+            send_message_to_discord(tb)
             print(tb)
         except Exception:
-            print("Error sending message to is_fake_Account")
+            print("Error sending message to discord")
 
         # Try again after a pause
-        time.sleep(30 * failed_attempt)
+        time.sleep(120 * failed_attempt)
         failed_attempt = failed_attempt + 1
 
         # Refresh streams
