@@ -3,7 +3,9 @@ import time
 import traceback
 
 import praw
+import prawcore
 import requests
+import trello
 
 import CONFIG
 import trello_blacklist
@@ -54,7 +56,7 @@ while True:
 
         # Resetting failed attempt counter in case the code doesn't throw exception
         failed_attempt = 1
-    except Exception:
+    except Exception as exception:
         # Sends a message to mods in case of error
         tb = traceback.format_exc()
         try:
@@ -63,9 +65,12 @@ while True:
         except Exception:
             print("Error sending message to discord")
 
-        # Try again after a pause
-        time.sleep(120 * failed_attempt)
-        failed_attempt = failed_attempt + 1
+        # In case of server error pause for two minutes
+        if isinstance(exception, prawcore.exceptions.ServerError) or isinstance(exception, trello.ResourceUnavailable):
+            print("Waiting {} minutes".format(2 * failed_attempt))
+            # Try again after a pause
+            time.sleep(120 * failed_attempt)
+            failed_attempt = failed_attempt + 1
 
         # Refresh streams
         comment_stream = subreddit.stream.comments(pause_after=-1, skip_existing=True)
